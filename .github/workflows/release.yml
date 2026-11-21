@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的版本标签，例如 v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: "MacaronTimer ${{ github.event.inputs.tag || github.ref_name }}"
+          releaseBody: |
+            马卡龙计时器 ${{ github.event.inputs.tag || github.ref_name }}。
+
+            - `MacaronTimer_*_x64-setup.exe`：NSIS 安装包（按用户安装，无需管理员）
+            - `MacaronTimer-*-portable.zip`：便携版，解压双击即用
+
+            完整变更见仓库根目录的 CHANGELOG.md。
+          releaseDraft: false
+          prerelease: false
+          args: --bundles nsis
+
+      - name: Package portable build
+        shell: pwsh
+        run: |
+          Copy-Item src-tauri/target/release/macaron-timer.exe MacaronTimer.exe -Force
+          Compress-Archive -Path MacaronTimer.exe, README.md -DestinationPath "MacaronTimer-${{ github.ref_name }}-portable.zip" -Force
+
+      - name: Upload portable zip
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" "MacaronTimer-${{ github.ref_name }}-portable.zip" --clobber

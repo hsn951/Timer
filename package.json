@@ -1,0 +1,17 @@
+{
+  "name": "macaron-timer",
+  "private": false,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "马卡龙配色的极简 Windows 计时器",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.6",
+    "vite": "^6.0.7"
+  }
+}
