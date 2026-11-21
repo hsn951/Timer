@@ -1,5 +1,8 @@
 # 马卡龙计时器 MacaronTimer
 
+![release](https://img.shields.io/github/v/release/hsn951/Timer)
+![build](https://github.com/hsn951/Timer/actions/workflows/release.yml/badge.svg)
+
 一个没有传统 Windows 窗口的悬浮式计时器：无边框、圆角、马卡龙配色、常驻托盘。
 秒表 / 倒计时 / 番茄钟三合一，支持提前创建多个计时器、自定义结束铃声。
 
@@ -10,7 +13,7 @@
 从 [Releases](https://github.com/hsn951/Timer/releases) 下载（当前 **v0.1.0**）：
 
 - `MacaronTimer_0.1.0_x64-setup.exe` — NSIS 安装包（按用户安装，无需管理员）
-- `MacaronTimer-0.1.0-portable.zip` — 便携版，解压双击即用
+- `MacaronTimer-v0.1.0-portable.zip` — 便携版，解压双击即用
 
 变更记录见 [CHANGELOG.md](CHANGELOG.md)。
 
