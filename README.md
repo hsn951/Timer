@@ -77,6 +77,8 @@ cargo build --release --manifest-path src-tauri/Cargo.toml
 
 也可以直接用 `scripts\build.ps1` / `scripts\run.ps1`（会自动把 Rust 目录加进 PATH）。
 
+开发调试用 `scripts\dev.ps1`：Vite HMR + Tauri debug 窗口，改前端不用重新编译 Rust。
+
 > 没有安装 `@tauri-apps/cli` 也能构建：Tauri 在编译期通过 `frontendDist` 把 `dist/` 嵌进 exe。
 > 需要生成 NSIS 安装包时再执行 `cargo install tauri-cli` 然后 `cargo tauri build`。
 

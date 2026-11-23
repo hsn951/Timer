@@ -119,7 +119,7 @@ if (previewVariant === "stopwatch") {
     label: "深度工作",
     target_ms: 1500000,
     elapsed_ms: 372000,
-    running: false,
+    running: true,
   });
 }
 if (mock.timer.running) startMockLoop();

@@ -613,10 +613,11 @@ function buildFullscreenClock() {
     card.className = "flip-card";
     card.dataset.val = "0";
     card.innerHTML =
-      '<div class="fc-half fc-top"><div class="fc-glyph">0</div></div>' +
-      '<div class="fc-half fc-bottom"><div class="fc-glyph">0</div></div>' +
-      '<div class="fc-half fc-flip fc-flip-top"><div class="fc-glyph">0</div></div>' +
-      '<div class="fc-half fc-flip fc-flip-bottom"><div class="fc-glyph">0</div></div>';
+      '<div class="fc-layer fc-static-top"><span>0</span></div>' +
+      '<div class="fc-layer fc-static-bottom"><span>0</span></div>' +
+      '<div class="fc-layer fc-flap fc-flap-top"><span>0</span></div>' +
+      '<div class="fc-layer fc-flap fc-flap-bottom"><span>0</span></div>' +
+      '<div class="fc-hinge"></div>';
     flip.appendChild(card);
     if (i === 1 || i === 3) flip.appendChild(makeColon("flip-colon"));
   }
@@ -657,18 +658,18 @@ function setFlipDigit(card, value) {
   if (card.dataset.val === value) return;
   const old = card.dataset.val;
   card.dataset.val = value;
-  card.querySelector(".fc-top .fc-glyph").textContent = value;
-  card.querySelector(".fc-bottom .fc-glyph").textContent = old;
-  card.querySelector(".fc-flip-top .fc-glyph").textContent = old;
-  card.querySelector(".fc-flip-bottom .fc-glyph").textContent = value;
+  card.querySelector(".fc-static-top span").textContent = value;
+  card.querySelector(".fc-static-bottom span").textContent = old;
+  card.querySelector(".fc-flap-top span").textContent = old;
+  card.querySelector(".fc-flap-bottom span").textContent = value;
   card.classList.remove("flipping");
   void card.offsetWidth;
   card.classList.add("flipping");
   clearTimeout(card._flipTimer);
   card._flipTimer = setTimeout(() => {
-    card.querySelector(".fc-bottom .fc-glyph").textContent = value;
+    card.querySelector(".fc-static-bottom span").textContent = value;
     card.classList.remove("flipping");
-  }, 520);
+  }, 610);
 }
 
 function renderFlip(text) {

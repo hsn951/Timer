@@ -1079,133 +1079,165 @@ body.fs {
   box-shadow: none;
 }
 
-/* ---------- 翻页时钟 ---------- */
+/* ---------- 翻页时钟（日历牌） ---------- */
 .clock-flip {
   display: flex;
   align-items: center;
-  gap: clamp(6px, 0.9vw, 16px);
+  gap: clamp(8px, 1vw, 18px);
+  perspective: 1600px;
 }
 
 .flip-card {
   position: relative;
-  height: clamp(110px, 24vh, 270px);
-  aspect-ratio: 0.68;
-  perspective: 900px;
-  border-radius: 12px;
-  background: #10131b;
-  box-shadow:
-    0 22px 45px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  font-size: clamp(58px, 12.5vh, 150px);
-  font-family: "Segoe UI Variable Display", "Segoe UI", "Bahnschrift", sans-serif;
+  perspective: 2200px;
+  height: clamp(120px, 26vh, 285px);
+  aspect-ratio: 0.72;
+  border-radius: 16px;
+  background: #0c0e14;
+  font-size: clamp(64px, 15vh, 170px);
+  font-family: "Bahnschrift", "Segoe UI Variable Display", "Segoe UI", sans-serif;
   font-weight: 600;
+  color: #f7f2e6;
+  transform-style: preserve-3d;
+  box-shadow:
+    0 28px 55px rgba(0, 0, 0, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-.fc-half,
-.fc-flip {
+.fc-layer {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 50%;
-  overflow: hidden;
-  backface-visibility: hidden;
-}
-
-.fc-top,
-.fc-flip-top {
-  top: 0;
-  border-radius: 12px 12px 0 0;
-  background: linear-gradient(#2b2f3c, #222531);
-}
-
-.fc-bottom,
-.fc-flip-bottom {
-  bottom: 0;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(#1c1f2a, #14171f);
-}
-
-.fc-glyph {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 200%;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #f7f3e9;
+  overflow: hidden;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  backface-visibility: hidden;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
 }
 
-.fc-top .fc-glyph,
-.fc-flip-top .fc-glyph {
-  top: 0;
-  transform: translateY(-2.5%);
+.fc-static-top {
+  clip-path: inset(0 0 50% 0);
+  border-radius: 16px 16px 3px 3px;
+  background: linear-gradient(180deg, #3d4353 0%, #313748 58%, #2a2f3d 100%);
 }
 
-.fc-bottom .fc-glyph,
-.fc-flip-bottom .fc-glyph {
-  bottom: 0;
+.fc-static-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 85% at 50% -25%, rgba(255, 255, 255, 0.16), transparent 62%);
+  pointer-events: none;
 }
 
-.fc-flip-top,
-.fc-flip-bottom {
+.fc-static-bottom {
+  clip-path: inset(50% 0 0 0);
+  border-radius: 3px 3px 16px 16px;
+  background: linear-gradient(180deg, #232833 0%, #1a1e27 55%, #13161d 100%);
+}
+
+.fc-flap {
+  opacity: 0;
+}
+
+.fc-flap-top {
+  z-index: 4;
+  clip-path: inset(0 0 50% 0);
+  border-radius: 16px 16px 3px 3px;
+  transform-origin: 50% 50%;
+  background: linear-gradient(180deg, #4b5268 0%, #343a4b 100%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.45);
+}
+
+.fc-flap-bottom {
   z-index: 3;
-}
-
-.fc-flip-bottom {
-  z-index: 2;
+  clip-path: inset(50% 0 0 0);
+  border-radius: 3px 3px 16px 16px;
+  transform-origin: 50% 50%;
   transform: rotateX(90deg);
+  background: linear-gradient(180deg, #262b37 0%, #171a22 100%);
 }
 
-.flip-card::after {
+/* 中缝 */
+.flip-card::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(50% - 1px);
-  height: 2px;
-  background: rgba(0, 0, 0, 0.5);
+  top: calc(50% - 1.5px);
+  height: 3px;
   z-index: 6;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+/* 两侧铰链 */
+.fc-hinge {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
   pointer-events: none;
 }
 
-.flip-card.flipping .fc-flip-top {
-  animation: fc-flip-top 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.fc-hinge::before,
+.fc-hinge::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 5px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #0a0c11;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.flip-card.flipping .fc-flip-bottom {
-  animation: fc-flip-bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.fc-hinge::before {
+  left: 6px;
+}
+
+.fc-hinge::after {
+  right: 6px;
+}
+
+.flip-card.flipping .fc-flap-top {
+  opacity: 1;
+  animation: fc-flip-top 0.58s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+.flip-card.flipping .fc-flap-bottom {
+  opacity: 1;
+  animation: fc-flip-bottom 0.58s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.02s forwards;
 }
 
 @keyframes fc-flip-top {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-90deg); }
+  0% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
+  55% {
+    filter: brightness(0.78);
+  }
+  100% {
+    transform: rotateX(-90deg);
+    filter: brightness(0.62);
+  }
 }
 
 @keyframes fc-flip-bottom {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
-}
-
-.flip-colon {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(14px, 3vh, 32px);
-  padding: 0 clamp(2px, 0.3vw, 6px);
-}
-
-.flip-colon i {
-  width: clamp(9px, 1vw, 15px);
-  height: clamp(9px, 1vw, 15px);
-  border-radius: 50%;
-  background: rgba(247, 243, 233, 0.75);
-}
-
-.flip-colon.dim i {
-  opacity: 0.18;
+  0% {
+    transform: rotateX(90deg);
+    filter: brightness(0.6);
+  }
+  100% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
 }
 
 /* ---------- 全屏控件 ---------- */
@@ -1309,23 +1341,4 @@ body.fs {
   background: #fff;
   color: var(--ink);
   box-shadow: 0 2px 6px rgba(140, 120, 170, 0.18);
-}
-/* 修正翻页牌上下半片的对齐，并隐藏静止时的翻片图层 */
-.fc-glyph {
-  top: 0;
-  transform: translateY(-2.5%);
-}
-
-.fc-bottom .fc-glyph,
-.fc-flip-bottom .fc-glyph {
-  top: -100%;
-  bottom: auto;
-}
-
-.fc-flip {
-  opacity: 0;
-}
-
-.flip-card.flipping .fc-flip {
-  opacity: 1;
 }
