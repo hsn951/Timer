@@ -17,6 +17,9 @@
               <span>马卡龙计时器</span>
             </div>
             <div class="win-actions">
+              <button class="icon-btn" id="btnFullscreen" title="全屏沉浸 (F)">
+                <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M20 9V4h-5M4 15v5h5"/></svg>
+              </button>
               <button class="icon-btn" id="btnPin" title="窗口置顶">
                 <svg viewBox="0 0 24 24"><path d="M9 4h6l-1 7 3 3H7l3-3-1-7z"/><path d="M12 17v3"/></svg>
               </button>
@@ -140,6 +143,18 @@
             </div>
 
             <div class="group">
+              <div class="group-title">全屏沉浸</div>
+              <div class="row">
+                <span>时钟样式</span>
+                <div class="seg" id="fsStyleSetting">
+                  <button id="setDigitalBtn" data-fsstyle="digital">电子</button>
+                  <button id="setFlipBtn" data-fsstyle="flip">翻页</button>
+                </div>
+              </div>
+              <div class="hint">按 F 或点右上角全屏图标进入；Esc 退出，全屏内 F 切换样式。</div>
+            </div>
+
+            <div class="group">
               <div class="group-title">番茄钟</div>
               <div class="grid-3">
                 <label class="field"><span>专注</span><input type="number" id="setWork" min="1" max="180" /></label>
@@ -175,6 +190,35 @@
         </section>
 
         <div class="toast" id="toast" hidden></div>
+      </div>
+
+      <!-- ===== 全屏沉浸 ===== -->
+      <div class="fs-view" id="fsView" hidden>
+        <div class="fs-aurora" aria-hidden="true"></div>
+        <div class="fs-top">
+          <div class="fs-label" id="fsLabel">倒计时</div>
+          <div class="fs-sub" id="fsSub">专注 · 25 分钟</div>
+        </div>
+
+        <div class="fs-clock" id="fsClock">
+          <div class="clock-digital" id="clockDigital"></div>
+          <div class="clock-flip" id="clockFlip" hidden></div>
+        </div>
+
+        <div class="fs-controls" id="fsControls">
+          <div class="seg fs-seg" id="fsStyleSeg">
+            <button id="fsDigitalBtn" data-fsstyle="digital">电子</button>
+            <button id="fsFlipBtn" data-fsstyle="flip">翻页</button>
+          </div>
+          <button class="fs-icon" id="fsToggle" title="开始 / 暂停">
+            <svg viewBox="0 0 24 24" id="fsToggleIcon"><path d="M8 5l11 7-11 7V5z"/></svg>
+          </button>
+          <button class="fs-icon" id="fsExit" title="退出全屏 (Esc)">
+            <svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 20h5v-5M20 9V4h-5M4 15v5h5"/></svg>
+          </button>
+        </div>
+
+        <div class="fs-hint">Esc 退出 · F 切换样式 · 空格 开始 / 暂停</div>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>

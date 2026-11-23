@@ -47,6 +47,7 @@ const mock = {
     long_break_min: 15,
     rounds: 4,
     auto_start: true,
+    fs_style: "digital",
   },
   presets: [
     { id: "p1", name: "泡面", ms: 180000, color: "#FFB3C7" },
@@ -111,6 +112,14 @@ if (previewVariant === "stopwatch") {
     target_ms: 1500000,
     elapsed_ms: 420000,
     running: true,
+  });
+} else if (previewVariant === "fullscreen") {
+  Object.assign(mock.timer, {
+    kind: "countdown",
+    label: "深度工作",
+    target_ms: 1500000,
+    elapsed_ms: 372000,
+    running: false,
   });
 }
 if (mock.timer.running) startMockLoop();
@@ -229,6 +238,8 @@ function mockInvoke(cmd, args = {}) {
       Object.assign(mock.settings, args.patch || {});
       return mock.settings;
     case "set_mode":
+      return null;
+    case "set_fullscreen":
       return null;
     case "import_sound":
       emit("toast", { text: "浏览器预览模式不支持导入音频" });

@@ -10,10 +10,10 @@
 
 ## 下载
 
-从 [Releases](https://github.com/hsn951/Timer/releases) 下载（当前 **v0.1.0**）：
+从 [Releases](https://github.com/hsn951/Timer/releases) 下载（当前 **v0.2.0**）：
 
-- `MacaronTimer_0.1.0_x64-setup.exe` — NSIS 安装包（按用户安装，无需管理员）
-- `MacaronTimer-v0.1.0-portable.zip` — 便携版，解压双击即用
+- `MacaronTimer_0.2.0_x64-setup.exe` — NSIS 安装包（按用户安装，无需管理员）
+- `MacaronTimer-v0.2.0-portable.zip` — 便携版，解压双击即用
 
 变更记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -25,6 +25,7 @@
 - **我的计时器**：提前建好常用计时器（泡面 3 分钟、咖啡 4 分钟…），点一下直接开始；同一时间只跑一个
 - **自定义铃声**：导入本地 wav / mp3 / ogg / flac，试听、调音量、渐强淡入，导入即校验，坏文件当场拒绝
 - **窗口**：无边框圆角、可拖动、置顶、迷你模式（300×96 只剩数字）、关闭到托盘继续计时
+- **全屏沉浸**：一键全屏（`F`），两种时钟皮肤——七段电子管 / 翻页牌；`Esc` 退出，鼠标静止自动隐藏控件
 - **托盘菜单**：显示/隐藏、开始/暂停、静音、退出
 - **快捷键**：`Space` 开始暂停、`R` 重置、`L` 计次、`1/2/3` 切页、`Esc` 返回；
   全局 `Ctrl+Alt+Space` 呼出窗口 / 开始暂停（窗口收进托盘时优先呼出），`Ctrl+Alt+T`、`Ctrl+Alt+H` 也可呼出（若被其他软件占用则自动失效）
@@ -99,6 +100,11 @@ pnpm dev
 
 `release/MacaronTimer-0.1.0-portable.zip` 解压后双击 `MacaronTimer.exe`，无需安装。
 首次运行会在 `%APPDATA%\com.macaron.timer\` 生成配置与两个内置铃声。
+
+## 全屏沉浸
+
+![电子时钟](docs/screenshots/fullscreen-digital.png)
+![翻页时钟](docs/screenshots/fullscreen-flip.png)
 
 ## 实机截图（125% DPI）
 

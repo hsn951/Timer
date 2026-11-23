@@ -234,6 +234,22 @@ pub fn set_mode(app: AppHandle, mode: String, state: State<'_, AppState>) {
 }
 
 #[tauri::command]
+pub fn set_fullscreen(app: AppHandle, on: bool, state: State<'_, AppState>) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_fullscreen(on);
+        if on {
+            let _ = window.set_focus();
+        }
+        let always_on_top = if on {
+            true
+        } else {
+            state.settings.lock().unwrap().always_on_top
+        };
+        let _ = window.set_always_on_top(always_on_top);
+    }
+}
+
+#[tauri::command]
 pub fn import_sound(app: AppHandle) {
     let handle = app.clone();
     app.dialog()

@@ -18,6 +18,7 @@ pub struct Settings {
     pub rounds: u32,
     pub auto_start: bool,
     pub mode: String,
+    pub fs_style: String,
 }
 
 impl Default for Settings {
@@ -36,6 +37,7 @@ impl Default for Settings {
             rounds: 4,
             auto_start: true,
             mode: "normal".to_string(),
+            fs_style: "digital".to_string(),
         }
     }
 }

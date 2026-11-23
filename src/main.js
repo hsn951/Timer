@@ -14,6 +14,29 @@ const ACCENTS = {
 
 const COLORS = ["#FFB3C7", "#FFD98E", "#9FE7CE", "#9FD3FF", "#C6A6F8"];
 
+const SEG_ORDER = ["a", "b", "c", "d", "e", "f", "g"];
+const SEG_PATHS = {
+  a: "M22 10 H78",
+  b: "M86 20 V82",
+  c: "M86 98 V160",
+  d: "M22 170 H78",
+  e: "M14 98 V160",
+  f: "M14 20 V82",
+  g: "M22 90 H78",
+};
+const SEG_MAP = {
+  0: "abcdef",
+  1: "bc",
+  2: "abged",
+  3: "abgcd",
+  4: "fgbc",
+  5: "afgcd",
+  6: "afgecd",
+  7: "abc",
+  8: "abcdefg",
+  9: "abcdfg",
+};
+
 const state = {
   timer: null,
   settings: null,
@@ -24,6 +47,10 @@ const state = {
   newPresetColor: COLORS[0],
   previewTimer: null,
   toastTimer: null,
+  fullscreen: false,
+  fsStyle: "digital",
+  fsIdleTimer: null,
+  fsBuilt: false,
 };
 
 /* ---------------------------- 启动 ---------------------------- */
@@ -82,6 +109,10 @@ async function init() {
   if (params.get("view") === "settings") openSettings();
   if (params.get("view") === "preset") openPresetSheet();
   if (previewVariantIsMini()) setMode("mini");
+  if (params.get("mock") === "fullscreen") {
+    enterFullscreen();
+    if (params.get("style") === "flip") setTimeout(() => setFsStyle("flip"), 80);
+  }
 
   // 首次最小化到托盘时给一点提示（迷你模式 / 设置页不打扰）
   setTimeout(() => {
@@ -186,6 +217,7 @@ function render(t) {
 
   setKindUI(t.kind);
   renderMini(t, text, sub);
+  renderFullscreen(t);
 }
 
 function setKindUI(kind) {
@@ -258,6 +290,7 @@ function renderSettings() {
   $("setAuto").checked = !!s.auto_start;
   $("btnPin").classList.toggle("active", !!s.always_on_top);
   renderAccents();
+  renderFsStyleSetting();
   renderSounds();
 }
 
@@ -309,6 +342,38 @@ function bindStatic() {
   $("btnSecondary").addEventListener("click", secondaryAction);
   $("btnClose").addEventListener("click", () => invoke("hide_window"));
   $("btnMini").addEventListener("click", () => setMode("mini"));
+  $("btnFullscreen").addEventListener("click", () => enterFullscreen());
+  $("fsExit").addEventListener("click", () => exitFullscreen());
+  $("fsToggle").addEventListener("click", togglePrimary);
+  $("fsStyleSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fsstyle]");
+    if (b) setFsStyle(b.dataset.fsstyle);
+  });
+  $("fsStyleSetting").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fsstyle]");
+    if (b) setFsStyle(b.dataset.fsstyle);
+  });
+  $("fsView").addEventListener("mousemove", pokeFsIdle);
+
+  // 全屏时用捕获阶段监听，避免焦点/冒泡导致 Esc、F、空格失效
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (!state.fullscreen) return;
+      const key = e.key || "";
+      if (key === "Escape" || e.code === "Escape") {
+        e.preventDefault();
+        exitFullscreen();
+      } else if (key.toLowerCase() === "f") {
+        e.preventDefault();
+        setFsStyle(state.fsStyle === "digital" ? "flip" : "digital");
+      } else if (key === " " || e.code === "Space") {
+        e.preventDefault();
+        togglePrimary();
+      }
+    },
+    true
+  );
   $("btnSettings").addEventListener("click", openSettings);
   $("btnBack").addEventListener("click", closeDrawer);
   $("btnPin").addEventListener("click", () => patchSettings({ always_on_top: !state.settings.always_on_top }));
@@ -385,6 +450,7 @@ function bindStatic() {
     const tag = document.activeElement?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA") return;
     if (e.code === "Escape") {
+      if (state.fullscreen) return exitFullscreen();
       if (!$("presetSheet").hidden) return closePresetSheet();
       if (!$("settingsDrawer").hidden) return closeDrawer();
       if (state.mode === "mini") return setMode("normal");
@@ -393,6 +459,9 @@ function bindStatic() {
     if (e.code === "Space") {
       e.preventDefault();
       togglePrimary();
+    } else if (e.key.toLowerCase() === "f") {
+      if (state.fullscreen) setFsStyle(state.fsStyle === "digital" ? "flip" : "digital");
+      else enterFullscreen();
     } else if (e.key.toLowerCase() === "r") {
       invoke("reset");
     } else if (e.key.toLowerCase() === "l" && state.timer?.kind === "stopwatch") {
@@ -516,6 +585,190 @@ async function removePreset(id) {
   await invoke("remove_preset", { id });
   state.presets = state.presets.filter((p) => p.id !== id);
   renderPresets();
+}
+
+
+/* ---------------------------- 全屏沉浸 ---------------------------- */
+function buildFullscreenClock() {
+  if (state.fsBuilt) return;
+  const digital = $("clockDigital");
+  const flip = $("clockFlip");
+  digital.innerHTML = "";
+  flip.innerHTML = "";
+
+  for (let i = 0; i < 6; i++) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 100 180");
+    svg.classList.add("seg-digit");
+    for (const seg of SEG_ORDER) {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", SEG_PATHS[seg]);
+      path.dataset.seg = seg;
+      svg.appendChild(path);
+    }
+    digital.appendChild(svg);
+    if (i === 1 || i === 3) digital.appendChild(makeColon("seg-colon"));
+
+    const card = document.createElement("div");
+    card.className = "flip-card";
+    card.dataset.val = "0";
+    card.innerHTML =
+      '<div class="fc-half fc-top"><div class="fc-glyph">0</div></div>' +
+      '<div class="fc-half fc-bottom"><div class="fc-glyph">0</div></div>' +
+      '<div class="fc-half fc-flip fc-flip-top"><div class="fc-glyph">0</div></div>' +
+      '<div class="fc-half fc-flip fc-flip-bottom"><div class="fc-glyph">0</div></div>';
+    flip.appendChild(card);
+    if (i === 1 || i === 3) flip.appendChild(makeColon("flip-colon"));
+  }
+  state.fsBuilt = true;
+}
+
+function makeColon(cls) {
+  const colon = document.createElement("div");
+  colon.className = cls;
+  colon.innerHTML = "<i></i><i></i>";
+  return colon;
+}
+
+function fsClockText(t) {
+  const stopwatch = t.kind === "stopwatch";
+  const ms = stopwatch
+    ? t.elapsed_ms || 0
+    : Math.max(0, t.remaining_ms ?? (t.target_ms || 0) - (t.elapsed_ms || 0));
+  const total = Math.floor(ms / 1000);
+  const h = Math.min(99, Math.floor(total / 3600));
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(h)}${pad(m)}${pad(sec)}`;
+}
+
+function renderDigital(text) {
+  const svgs = $("clockDigital").querySelectorAll(".seg-digit");
+  [...svgs].forEach((svg, i) => {
+    const on = SEG_MAP[text[i]] || "";
+    svg.querySelectorAll("path").forEach((path) => {
+      path.classList.toggle("on", on.includes(path.dataset.seg));
+    });
+  });
+}
+
+function setFlipDigit(card, value) {
+  if (card.dataset.val === value) return;
+  const old = card.dataset.val;
+  card.dataset.val = value;
+  card.querySelector(".fc-top .fc-glyph").textContent = value;
+  card.querySelector(".fc-bottom .fc-glyph").textContent = old;
+  card.querySelector(".fc-flip-top .fc-glyph").textContent = old;
+  card.querySelector(".fc-flip-bottom .fc-glyph").textContent = value;
+  card.classList.remove("flipping");
+  void card.offsetWidth;
+  card.classList.add("flipping");
+  clearTimeout(card._flipTimer);
+  card._flipTimer = setTimeout(() => {
+    card.querySelector(".fc-bottom .fc-glyph").textContent = value;
+    card.classList.remove("flipping");
+  }, 520);
+}
+
+function renderFlip(text) {
+  const cards = $("clockFlip").querySelectorAll(".flip-card");
+  [...cards].forEach((card, i) => setFlipDigit(card, text[i]));
+}
+
+function renderFullscreen(t) {
+  if (!state.fullscreen || !t) return;
+  buildFullscreenClock();
+  const text = fsClockText(t);
+  const digital = state.fsStyle !== "flip";
+  $("clockDigital").hidden = !digital;
+  $("clockFlip").hidden = digital;
+  if (digital) renderDigital(text);
+  else renderFlip(text);
+
+  const dim = t.running ? Math.floor(Date.now() / 500) % 2 === 0 : true;
+  document.querySelectorAll(".seg-colon, .flip-colon").forEach((el) => el.classList.toggle("dim", dim));
+
+  let label = "倒计时";
+  let sub = "";
+  if (t.kind === "stopwatch") {
+    label = "秒表";
+    sub = t.running ? "计时中" : t.elapsed_ms > 0 ? "已暂停" : "按空格开始";
+  } else if (t.kind === "pomodoro") {
+    label = phaseLabel(t);
+    sub = `第 ${t.round || 1}/${t.rounds || state.settings.rounds} 轮`;
+  } else {
+    label = t.label || "倒计时";
+    sub = t.finished ? "时间到" : t.running ? "计时中" : "按空格开始";
+  }
+  $("fsLabel").textContent = label;
+  $("fsSub").textContent = sub;
+  $("fsToggleIcon").innerHTML = t.running
+    ? '<path d="M9 5v14M15 5v14"/>'
+    : '<path d="M8 5l11 7-11 7V5z" fill="currentColor" stroke="none"/>';
+  $("fsView").classList.toggle("paused", !t.running);
+}
+
+function syncFsStyleUI() {
+  [...$("fsStyleSeg").querySelectorAll("button")].forEach((b) =>
+    b.classList.toggle("on", b.dataset.fsstyle === state.fsStyle)
+  );
+  renderFsStyleSetting();
+}
+
+function renderFsStyleSetting() {
+  const seg = $("fsStyleSetting");
+  if (!seg) return;
+  const cur = state.settings?.fs_style || "digital";
+  [...seg.querySelectorAll("button")].forEach((b) => b.classList.toggle("on", b.dataset.fsstyle === cur));
+}
+
+function setFsStyle(style) {
+  if (!["digital", "flip"].includes(style)) return;
+  state.fsStyle = style;
+  if (state.settings) state.settings.fs_style = style;
+  syncFsStyleUI();
+  renderFullscreen(state.timer);
+  invoke("update_settings", { patch: { fs_style: style } }).catch(() => {});
+}
+
+function pokeFsIdle() {
+  const view = $("fsView");
+  view.classList.remove("idle");
+  clearTimeout(state.fsIdleTimer);
+  state.fsIdleTimer = setTimeout(() => {
+    if (state.fullscreen) view.classList.add("idle");
+  }, 2600);
+}
+
+async function enterFullscreen() {
+  if (state.fullscreen) return;
+  if (state.mode === "mini") await setMode("normal");
+  closeDrawer();
+  closePresetSheet();
+  state.fsStyle = state.settings?.fs_style === "flip" ? "flip" : "digital";
+  state.fullscreen = true;
+  document.body.classList.add("fs");
+  $("fsView").hidden = false;
+  buildFullscreenClock();
+  syncFsStyleUI();
+  renderFullscreen(state.timer);
+  pokeFsIdle();
+  await invoke("set_fullscreen", { on: true });
+  setTimeout(() => {
+    document.body.setAttribute("tabindex", "-1");
+    document.body.focus();
+    window.focus();
+  }, 80);
+}
+
+async function exitFullscreen() {
+  if (!state.fullscreen) return;
+  state.fullscreen = false;
+  document.body.classList.remove("fs");
+  $("fsView").hidden = true;
+  $("fsView").classList.remove("idle");
+  await invoke("set_fullscreen", { on: false });
 }
 
 /* ---------------------------- 窗口模式 / 抽屉 ---------------------------- */

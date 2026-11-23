@@ -117,6 +117,7 @@ pub fn run() {
             commands::remove_preset,
             commands::update_settings,
             commands::set_mode,
+            commands::set_fullscreen,
             commands::import_sound,
             commands::remove_sound,
             commands::preview_sound,
