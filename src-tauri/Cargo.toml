@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "macaron-timer"
 version = "0.2.0"
 description = "马卡龙配色的极简 Windows 计时器"

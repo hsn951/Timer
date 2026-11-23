@@ -14,7 +14,7 @@ function Update-File($path, $pattern, $replacement) {
     if ($next -eq $text) {
         Write-Warning "未在 $path 找到可替换的版本号"
     }
-    Set-Content -Path $path -Value $next -Encoding UTF8 -NoNewline
+    [System.IO.File]::WriteAllText($path, $next, (New-Object System.Text.UTF8Encoding($false)))
     Write-Host "updated $path -> $Version"
 }
 
