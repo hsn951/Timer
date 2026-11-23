@@ -658,18 +658,16 @@ function setFlipDigit(card, value) {
   if (card.dataset.val === value) return;
   const old = card.dataset.val;
   card.dataset.val = value;
-  card.querySelector(".fc-static-top span").textContent = value;
-  card.querySelector(".fc-static-bottom span").textContent = old;
-  card.querySelector(".fc-flap-top span").textContent = old;
-  card.querySelector(".fc-flap-bottom span").textContent = value;
+  card.querySelector(".fc-flap-bottom span").textContent = old;
   card.classList.remove("flipping");
   void card.offsetWidth;
   card.classList.add("flipping");
   clearTimeout(card._flipTimer);
   card._flipTimer = setTimeout(() => {
+    card.querySelector(".fc-static-top span").textContent = value;
     card.querySelector(".fc-static-bottom span").textContent = value;
     card.classList.remove("flipping");
-  }, 610);
+  }, 430);
 }
 
 function renderFlip(text) {
